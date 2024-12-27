@@ -93,5 +93,26 @@ public class serviceTestUnit {
 
     }
 
+    @Test
+    public void testPurchaseBeverageSuccess() {
+
+        Card card = new Card();
+        card.setId(1L);
+        card.setOwnerName("John Doe");
+        card.setBalance(100.0);
+        Boisson tea = Boisson.TEA;
+        card.setPurchaseCount(4);
+        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Transaction transaction = service.purchaseBeverage(1L, tea);
+
+        assertNotNull(transaction);
+        assertEquals(tea.getPrice()/2, transaction.getAmount(), 1e-6);
+        assertEquals(99.0, card.getBalance(), 1e-6);
+        assertEquals(0, card.getPurchaseCount());
+        verify(cardRepository, times(1)).save(card);
+        verify(transactionRepository, times(1)).save(transaction);
+    }
 
 }
